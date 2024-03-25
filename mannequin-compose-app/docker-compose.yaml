@@ -1,0 +1,31 @@
+services:
+  db:
+    build: ./db
+    restart: unless-stopped
+    networks:
+      - mannequin-network
+    volumes:
+      - ./my-sql-mount:/var/lib/mysql
+      # - ./assets/init-mysql.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - 3306:3306
+  web_app:
+    build: ./web-app
+    restart: unless-stopped
+    ports:
+      - 8888:8888
+    volumes:
+      - /Users/work/MannequinSoftware/mannequin-assets:/var/lib/mysql-files
+  # webapp:
+  #   build: ./webapp
+  #   restart: unless-stopped
+  #   ports:
+  #     - 8888:8888
+  #   networks:
+  #     - mannequin-network
+  #   depends_on:
+  #     - db
+  #   volumes:
+  #     - ./assets/mysql-files:/var/lib/mysql-files
+networks:
+  mannequin-network:
