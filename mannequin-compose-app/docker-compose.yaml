@@ -16,6 +16,10 @@ services:
       - 8888:8888
     volumes:
       - /Users/work/MannequinSoftware/mannequin-assets:/var/lib/mysql-files
+    networks:
+      - mannequin-network
+    depends_on:
+      - db
   # webapp:
   #   build: ./webapp
   #   restart: unless-stopped
