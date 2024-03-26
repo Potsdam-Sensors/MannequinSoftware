@@ -6,6 +6,7 @@ from mysql.connector import connect
 from threading import Thread
 from queue import Queue
 from datetime import datetime
+from time import sleep
 VALID_PID_VID_PATTERNS = [
     (0x80cb, 0x239a) # QT-Py SAMD21
 ]
@@ -104,6 +105,8 @@ class SerialHandle(object):
                 logger.exception(f"Unicode Decode Error reading device at {self.path}.")
             except OSError:
                 logger.exception(f"There was an exception reading the port at {self.path}.")
+                self._port.close()
+                self._port = None
             except ValueError:
                 logger.exception(f"There was a non-numeric value in the data for device at {self.path}.")
 
@@ -162,6 +165,8 @@ class SerialThread(Thread):
             data = self.ser.read_msg()
             if data:
                 self.q.put(data)
+            else:
+                sleep(.5)
 
 def main():
     ports = list_valid_ports()
