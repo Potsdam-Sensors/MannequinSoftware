@@ -29,7 +29,7 @@ def get_data(sensor: str, serial: str, num: int = 3):
     if not table_name:
         return None
     
-    query = QUERY%(table_name, serial, str(pd.Timestamp.now().round('1S')-pd.Timedelta('4h') -WINDOW_MAX), num)
+    query = QUERY%(table_name, serial, str(pd.Timestamp.now().round('1s')-pd.Timedelta('4h') -WINDOW_MAX), num)
     # logging.info(f"QUERY: {query}")
 
     conn = None
