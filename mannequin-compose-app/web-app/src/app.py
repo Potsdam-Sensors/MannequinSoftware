@@ -20,6 +20,7 @@ APP_PORT = 8888
 PM_MAX = 10
 
 placements_df = pd.read_csv(PLACEMENTS_FILE_PATH)
+logging.info(f"Placements: {placements_df}")
 
 MANNEQUIN_MASK_PATH = "assets/outline.png"
 

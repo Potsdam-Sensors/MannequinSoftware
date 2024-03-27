@@ -189,9 +189,8 @@ def main():
     if connection.is_connected():
     # if True:
         db_Info = connection.get_server_info()
-        print("Connected to MySQL Server version ", db_Info)
+        logging.info("Connected to MySQL Server version ", db_Info)
         cursor = connection.cursor()
-    
 
         try:
             while True:

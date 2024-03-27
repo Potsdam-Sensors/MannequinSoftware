@@ -5,7 +5,7 @@ services:
     networks:
       - mannequin-network
     volumes:
-      - ./my-sql-mount:/var/lib/mysql
+      - ${USERPROFILE}\MannequinSQLMount:/var/lib/mysql
       # - ./assets/init-mysql.sql:/docker-entrypoint-initdb.d/init-db.sql
     ports:
       - 3306:3306
@@ -15,7 +15,7 @@ services:
     ports:
       - 8888:8888
     volumes:
-      - /Users/work/MannequinSoftware/mannequin-assets:/var/lib/mysql-files
+      - ${USERPROFILE}\Desktop\mannequin_software_assets:/var/lib/mysql-files
     networks:
       - mannequin-network
     depends_on:
