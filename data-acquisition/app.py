@@ -6,7 +6,7 @@ from mysql.connector import connect
 from threading import Thread
 from queue import Queue
 from datetime import datetime
-from time import sleep
+from time import sleep, time
 VALID_PID_VID_PATTERNS = [
     (0x80cb, 0x239a) # QT-Py SAMD21
 ]
@@ -166,7 +166,7 @@ class SerialThread(Thread):
             if data:
                 self.q.put(data)
             else:
-                sleep(.5)
+                sleep(1)
 
 def main():
     ports = list_valid_ports()
@@ -175,7 +175,9 @@ def main():
 
     data_queue = Queue()
 
+    known_ports = set()
     for port in ports:
+        known_ports.add(port.serial_number)
         th = SerialThread(make_serial_handle(port), data_queue)
         th.start()
 
@@ -187,13 +189,22 @@ def main():
     )
 
     if connection.is_connected():
-    # if True:
         db_Info = connection.get_server_info()
         logging.info("Connected to MySQL Server version ", db_Info)
         cursor = connection.cursor()
-
+    
+        last_serial_check = 0
         try:
             while True:
+                if (data_queue.empty()) and (time() - last_serial_check >= 5):
+                    ports = list_valid_ports()
+                    for port in ports:
+                        if port.serial_number not in known_ports:
+                            print(f"New port at {port.name}.")
+                            known_ports.add(port.serial_number)
+                            SerialThread(make_serial_handle(port), data_queue).start()
+
+                    last_serial_check = time()
                 item = data_queue.get()
                 # print(item)
                 item_type = LEN_DATA_TYPE_MAP.get(len(item)-1)
