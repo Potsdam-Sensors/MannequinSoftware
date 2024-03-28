@@ -39,11 +39,25 @@ pn5 INT NOT NULL,
 pn10 INT NOT NULL
 );
 """
-INSERT_QUERY_AS = f"insert into {TABLE_NAME_AS} (sample_time, serial_number, pm1, pm2_5, pm10) values (%s, %s, %s, %s, %s)"
+
+"""
+CREATE TABLE data_opc_r2 (
+id INT AUTO_INCREMENT PRIMARY KEY,
+sample_time DATETIME NOT NULL,
+serial_number VARCHAR(50) NOT NULL,
+
+temperature DECIMAL(10, 1) NOT NULL,
+relativeHumidity DECIMAL(10,1) NOT NULL,
+pm1 DECIMAL(10,1) NOT NULL,
+pm2_5 DECIMAL(10,1) NOT NULL,
+pm10 DECIMAL(10,1) NOT NULL
+);
+"""
+INSERT_QUERY_AS = f"insert into {TABLE_NAME_AS} (sample_time, serial_number, temperature, relativeHumidity, pm1, pm2_5, pm10) values (%s, %s, %s, %s, %s, %s, %s)"
 INSERT_QUERY_PT = f"insert into {TABLE_NAME_PT} (sample_time, serial_number, pm1, pm2_5, pm10, pn0_3, pn0_5, pn1, pn2_5, pn5, pn10) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 
 DEVICE_TYPE_DICT_KEYS_MAP = {
-    DEVICE_TYPE_AS: ['ts', 'serial_number', 'PM1', 'PM2.5', 'PM10'],
+    DEVICE_TYPE_AS: ['ts', 'serial_number', 'temperature', 'relativeHumidity', 'PM1', 'PM2.5', 'PM10'],
     DEVICE_TYPE_PT: ['ts', 'serial_number', 'PM1', 'PM2.5', 'PM10', 'PN0.3', 'PN0.5', 'PN1', 'PN2.5', 'PN5', 'PN10'],
 }
 LEN_DATA_TYPE_MAP = {
@@ -53,7 +67,7 @@ LEN_DATA_TYPE_MAP = {
 
 DEVICE_TYPE_HEADERS_MAP = {
     DEVICE_TYPE_PT: ["serial_number", "PM1","PM2.5","PM10","PN0.3","PN0.5","PN1","PN2.5","PN5","PN10"],
-    DEVICE_TYPE_AS: ["timeMS","bin0","bin1","bin2","bin3","bin4","bin5","bin6","bin7","bin8",
+    DEVICE_TYPE_AS: ["serial_number", "timeMS","bin0","bin1","bin2","bin3","bin4","bin5","bin6","bin7","bin8",
                      "bin9","bin10","bin11","bin12","bin13","bin14","bin15","MToF0","MToF1",
                      "MToF2","MToF3","sampleFlowRate","temperature","relativeHumidity","samplingPeriod",
                      "rejectCountGlitch","rejectCountTof","PM1","PM2.5","PM10","checksum"]
