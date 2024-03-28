@@ -97,17 +97,19 @@ def update_graph(n_intervals):
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
     if button_id == 'interval-component':
-        new_z_data = get_data_many(placements_df['sensor'].values, placements_df['serial_number'].values, 3)
-        for idx, v in enumerate(new_z_data):
-            if (v is None) or (np.isnan(v)):
-                new_z_data[idx] = np.NaN
-        z = np.array(new_z_data).round(1)
+        if len(placements_df) != 0:
+            new_z_data = get_data_many(placements_df['sensor'].values, placements_df['serial_number'].values, 3)
+            if new_z_data is not None and len(new_z_data) > 0:
+                for idx, v in enumerate(new_z_data):
+                    if (v is None) or (np.isnan(v)):
+                        new_z_data[idx] = np.NaN
+                z = np.array(new_z_data).round(1)
 
-        fig.data[0].marker.color = z  # Use the z values for coloring
-        fig.data[0].marker.cmin = 0
-        fig.data[0].marker.cmax = max([z.max(), PM_MAX])
-        fig['data'][0]['customdata'] = [f"<br>{sensor} PM2.5</br><br><b>{val}</b></br>" for sensor, val in zip(placements_df['sensor'].values, z)]
-    
+                fig.data[0].marker.color = z  # Use the z values for coloring
+                fig.data[0].marker.cmin = 0
+                fig.data[0].marker.cmax = max([z.max(), PM_MAX])
+                fig['data'][0]['customdata'] = [f"<br>{sensor} PM2.5</br><br><b>{val}</b></br>" for sensor, val in zip(placements_df['sensor'].values, z)]
+            
     return fig
 
 def main():

@@ -78,13 +78,15 @@ class SerialHandle(object):
         if (not self._port) or (not self._port.is_open):
             try:
                 self._port = Serial(self.path, baudrate=115200)
+                logger.info(f"Succesfully openned port at {self.path}.")
             except OSError:
                 return False
         return True
     
     def read_msg(self) -> dict:
         if not self.open():
-            logger.error(f"Device at {self.path} has a port that will not open.")
+            # logger.error(f"Device at {self.path} has a port that will not open.")
+            pass
         else:
             try:
                 line = self._port.readline()
@@ -171,40 +173,56 @@ class SerialThread(Thread):
 def main():
     ports = list_valid_ports()
     for port in ports:
-        print(f"{port.description} Device at {port.device} has serial {port.serial_number}")
+        logger.info(f"{port.description} Device at {port.device} has serial {port.serial_number}")
 
     data_queue = Queue()
 
     known_ports = set()
-    for port in ports:
-        known_ports.add(port.serial_number)
-        th = SerialThread(make_serial_handle(port), data_queue)
-        th.start()
-
-    connection = connect(
-        host='localhost',
-        database='mannequin',
-        user='root',
-        password='telosair'
-    )
+    # for port in ports:
+    #     known_ports.add(port.serial_number)
+    #     th = SerialThread(make_serial_handle(port), data_queue)
+    #     th.start()
+    
+    connection = None
+    while True:
+        try:
+            connection = connect(
+                host='localhost',
+                database='mannequin',
+                user='root',
+                password='telosair'
+            )
+            break
+        except Exception:
+            sleep(1)
 
     if connection.is_connected():
         db_Info = connection.get_server_info()
-        logging.info("Connected to MySQL Server version ", db_Info)
+        print("Connected to MySQL Server version ", db_Info)
         cursor = connection.cursor()
     
         last_serial_check = 0
+        last_count_print = 0
+        count = 0
         try:
             while True:
-                if (data_queue.empty()) and (time() - last_serial_check >= 5):
+                ref_time = time()
+                if (ref_time - last_count_print >= 2):
+                    if count:
+                        logger.info(f"{count} Data Rows inserted.")
+                    count = 0
+                    last_count_print = ref_time
+                if (data_queue.empty()) and (ref_time - last_serial_check >= 5):
+                    logger.info("Starting new USB check")
                     ports = list_valid_ports()
                     for port in ports:
                         if port.serial_number not in known_ports:
-                            print(f"New port at {port.name}.")
+                            logger.info(f"New port discovered at {port.name}.")
                             known_ports.add(port.serial_number)
                             SerialThread(make_serial_handle(port), data_queue).start()
-
-                    last_serial_check = time()
+                    last_serial_check = ref_time
+                if data_queue.empty():
+                    continue
                 item = data_queue.get()
                 # print(item)
                 item_type = LEN_DATA_TYPE_MAP.get(len(item)-1)
@@ -219,7 +237,8 @@ def main():
                     cursor.execute(INSERT_QUERY_AS, vals)
 
                     connection.commit()
-                    print(f"{cursor.rowcount} Record inserted successfully into table")
+                    # print(f"{cursor.rowcount} Record inserted successfully into table")
+                    count += 1
 
                 elif item_type == DEVICE_TYPE_PT:
                     vals = [item[x] for x in DEVICE_TYPE_DICT_KEYS_MAP[DEVICE_TYPE_PT]]
@@ -229,7 +248,8 @@ def main():
                     cursor.execute(INSERT_QUERY_PT, vals)
 
                     connection.commit()
-                    print(f"{cursor.rowcount} Record inserted successfully into table")
+                    # print(f"{cursor.rowcount} Record inserted successfully into table")
+                    count += 1
 
 
         except Exception as e:
